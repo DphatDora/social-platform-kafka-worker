@@ -38,8 +38,18 @@ func (s *EmailService) SendEmail(payload json.RawMessage) {
 	}
 
 	auth := smtp.PlainAuth("", s.User, s.Password, s.SMTPHost)
-	msg := []byte(fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s",
-		p.To, p.Subject, p.Body))
+
+	// log email content
+	log.Printf("📧 Sending email to: %s, Subject: %s, Body: %s", p.To, p.Subject, p.Body)
+
+	msg := []byte(fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
+		"Subject: %s\r\n"+
+		"MIME-Version: 1.0\r\n"+
+		"Content-Type: text/html; charset=UTF-8\r\n"+
+		"Content-Transfer-Encoding: 7bit\r\n"+
+		"\r\n%s",
+		s.User, p.To, p.Subject, p.Body))
 
 	addr := fmt.Sprintf("%s:%s", s.SMTPHost, s.SMTPPort)
 	err := smtp.SendMail(addr, auth, s.User, []string{p.To}, msg)
