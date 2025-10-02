@@ -1,0 +1,28 @@
+app:
+  name: "social-platform-kafka-worker"
+  port: 8050
+
+database:
+  username: "postgres"
+  password: "your-database-password"
+  host: "localhost"
+  port: "5432"
+  name: "social-platform"
+  sslMode: "disable"
+  timeZone: "Asia/Ho_Chi_Minh"
+  debug: true
+  poolSize: 30
+
+kafka:
+  brokers: "localhost:9092"
+  topic: "background-tasks"
+  groupId: "worker-group"
+
+email:
+  smtpServer: "smtp.gmail.com"
+  smtpPort: "587"
+  user: ""
+  pass: ""
+
+log:
+  level: "debug"
