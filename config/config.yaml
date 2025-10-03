@@ -1,0 +1,31 @@
+app:
+  name: "social-platform-kafka-worker"
+  port: 8050
+
+database:
+  url:
+  username:
+  password:
+  host:
+  port:
+  name:
+  sslMode:
+  timeZone:
+  debug: true
+  poolSize: 30
+  IdleConnTimeoutSeconds: 100
+  maxConnAgeSeconds: 3600
+
+kafka:
+  brokers: "localhost:9092"
+  topic: "background-tasks"
+  groupId: "worker-group"
+
+email:
+  smtpServer:
+  smtpPort:
+  user:
+  pass:
+
+log:
+  level: "debug"

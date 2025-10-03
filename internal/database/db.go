@@ -1,19 +1,3 @@
-// package db
-
-// import (
-// 	"gorm.io/driver/postgres"
-// 	"gorm.io/gorm"
-// )
-
-// func Connect(dsn string) (*gorm.DB, error) {
-// 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	//db.AutoMigrate(&model.BackgroundTask{})
-// 	return db, nil
-// }
-
 package database
 
 import (
@@ -27,22 +11,12 @@ import (
 var pgSingleton *gorm.DB
 
 func InitPostgresql(conf *config.Config) {
-	dbUser := conf.Database.Username
-	dbPassword := conf.Database.Password
-	dbHost := conf.Database.Host
-	dbPort := conf.Database.Port
-	dbName := conf.Database.Name
-	dbSslMode := conf.Database.SslMode
-	dbTimezone := conf.Database.TimeZone
+	dbUrl := conf.Database.URL
 
-	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=%s",
-		dbHost, dbPort, dbUser, dbPassword, dbName, dbSslMode, dbTimezone,
-	)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	db = db.Debug()
 	if err != nil {
-		panic("❌❌ Failed to connect database" + err.Error())
+		panic("❌❌ Failed to connect database: " + err.Error())
 	}
 	fmt.Println("✅✅ Connect to the database successfully")
 	pgSingleton = db

@@ -36,9 +36,10 @@ func LoadConfig() {
 		}
 
 		// env override
-		viper.SetEnvPrefix("SOCIALPLATFORM")
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+		bindEnvs()
 
 		if err := viper.Unmarshal(&config); err != nil {
 			log.Fatalf("Config unmarshal error: %s", err)
@@ -49,4 +50,22 @@ func LoadConfig() {
 func GetConfig() Config {
 	LoadConfig()
 	return config
+}
+
+func bindEnvs() {
+	// Database
+	_ = viper.BindEnv("database.url", "DB_URL")
+	_ = viper.BindEnv("database.username", "DB_USER")
+	_ = viper.BindEnv("database.password", "DB_PASSWORD")
+	_ = viper.BindEnv("database.host", "DB_HOST")
+	_ = viper.BindEnv("database.port", "DB_PORT")
+	_ = viper.BindEnv("database.name", "DB_NAME")
+	_ = viper.BindEnv("database.sslMode", "DB_SSLMODE")
+	_ = viper.BindEnv("database.timeZone", "DB_TIMEZONE")
+
+	// Email
+	_ = viper.BindEnv("email.user", "EMAIL_USER")
+	_ = viper.BindEnv("email.password", "EMAIL_PASSWORD")
+	_ = viper.BindEnv("email.smtpServer", "EMAIL_SMTP_SERVER")
+	_ = viper.BindEnv("email.smtpPort", "EMAIL_SMTP_PORT")
 }
