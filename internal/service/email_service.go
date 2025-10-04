@@ -26,7 +26,7 @@ func NewEmailService(conf *config.Config) *EmailService {
 		SMTPHost: conf.Email.SMTPServer,
 		SMTPPort: conf.Email.SMTPPort,
 		User:     conf.Email.User,
-		Password: conf.Email.Pass,
+		Password: conf.Email.Password,
 	}
 }
 

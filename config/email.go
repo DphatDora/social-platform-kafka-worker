@@ -4,5 +4,5 @@ type Email struct {
 	SMTPServer string
 	SMTPPort   string
 	User       string
-	Pass       string
+	Password   string
 }

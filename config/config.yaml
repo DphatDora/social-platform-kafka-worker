@@ -17,15 +17,19 @@ database:
   maxConnAgeSeconds: 3600
 
 kafka:
-  brokers: "localhost:9092"
-  topic: "background-tasks"
-  groupId: "worker-group"
+  brokers:
+  topic:
+  groupId:
+  username:
+  password:
+  securityProtocol:
+  saslMechanism:
 
 email:
   smtpServer:
   smtpPort:
   user:
-  pass:
+  password:
 
 log:
   level: "debug"
