@@ -2,14 +2,17 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 	"strings"
 
+	"social-platform-kafka-worker/config"
 	"social-platform-kafka-worker/internal/model"
 	"social-platform-kafka-worker/internal/service"
 
 	"github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl/plain"
 )
 
 type Consumer struct {
@@ -17,13 +20,27 @@ type Consumer struct {
 	emailService *service.EmailService
 }
 
-func NewConsumer(brokers, topic, groupID string, emailService *service.EmailService) *Consumer {
+func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService) *Consumer {
+	readerConfig := kafka.ReaderConfig{
+		Brokers: strings.Split(kafkaConfig.Brokers, ","),
+		Topic:   kafkaConfig.Topic,
+		GroupID: kafkaConfig.GroupID,
+	}
+
+	// Configure SASL/SSL if enabled
+	if kafkaConfig.SecurityProtocol == "SASL_SSL" {
+		mechanism := plain.Mechanism{
+			Username: kafkaConfig.Username,
+			Password: kafkaConfig.Password,
+		}
+		readerConfig.Dialer = &kafka.Dialer{
+			SASLMechanism: mechanism,
+			TLS:           &tls.Config{},
+		}
+	}
+
 	return &Consumer{
-		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers: strings.Split(brokers, ","),
-			Topic:   topic,
-			GroupID: groupID,
-		}),
+		reader:       kafka.NewReader(readerConfig),
 		emailService: emailService,
 	}
 }

@@ -63,6 +63,15 @@ func bindEnvs() {
 	_ = viper.BindEnv("database.sslMode", "DB_SSLMODE")
 	_ = viper.BindEnv("database.timeZone", "DB_TIMEZONE")
 
+	// Kafka
+	_ = viper.BindEnv("kafka.brokers", "KAFKA_HOST")
+	_ = viper.BindEnv("kafka.topic", "KAFKA_TOPIC")
+	_ = viper.BindEnv("kafka.groupId", "KAFKA_GROUP_ID")
+	_ = viper.BindEnv("kafka.username", "KAFKA_USERNAME")
+	_ = viper.BindEnv("kafka.password", "KAFKA_PASSWORD")
+	_ = viper.BindEnv("kafka.securityProtocol", "KAFKA_SECURITY_PROTOCOL")
+	_ = viper.BindEnv("kafka.saslMechanism", "KAFKA_SASL_MECHANISM")
+
 	// Email
 	_ = viper.BindEnv("email.user", "EMAIL_USER")
 	_ = viper.BindEnv("email.password", "EMAIL_PASSWORD")

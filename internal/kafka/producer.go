@@ -2,23 +2,41 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 
+	"social-platform-kafka-worker/config"
+
 	"github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl/plain"
 )
 
 type Producer struct {
 	writer *kafka.Writer
 }
 
-func NewProducer(brokers, topic string) *Producer {
+func NewProducer(kafkaConfig config.Kafka) *Producer {
+	writer := &kafka.Writer{
+		Addr:     kafka.TCP(kafkaConfig.Brokers),
+		Topic:    kafkaConfig.Topic,
+		Balancer: &kafka.LeastBytes{},
+	}
+
+	// Configure SASL/SSL if enabled
+	if kafkaConfig.SecurityProtocol == "SASL_SSL" {
+		mechanism := plain.Mechanism{
+			Username: kafkaConfig.Username,
+			Password: kafkaConfig.Password,
+		}
+		writer.Transport = &kafka.Transport{
+			SASL: mechanism,
+			TLS:  &tls.Config{},
+		}
+	}
+
 	return &Producer{
-		writer: &kafka.Writer{
-			Addr:     kafka.TCP(brokers),
-			Topic:    topic,
-			Balancer: &kafka.LeastBytes{},
-		},
+		writer: writer,
 	}
 }
 

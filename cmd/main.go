@@ -37,8 +37,8 @@ func setUpInfrastructure() {
 	emailService := service.NewEmailService(&conf)
 
 	// Kafka
-	producer := kafka.NewProducer(conf.Kafka.Brokers, conf.Kafka.Topic)
-	consumer := kafka.NewConsumer(conf.Kafka.Brokers, conf.Kafka.Topic, conf.Kafka.GroupID, emailService)
+	producer := kafka.NewProducer(conf.Kafka)
+	consumer := kafka.NewConsumer(conf.Kafka, emailService)
 
 	// Handler
 	taskHandler := handler.NewTaskHandler(taskService, producer)
