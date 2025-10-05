@@ -43,6 +43,8 @@ func setUpInfrastructure() {
 	// Handler
 	taskHandler := handler.NewTaskHandler(taskService, producer)
 
+	log.Printf("\n-----------------\n✅✅ Kafka Worker is running ✅✅\n-----------------")
+
 	// Run Producer in background
 	go func() {
 		ctx := context.Background()

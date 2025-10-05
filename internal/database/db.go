@@ -14,7 +14,7 @@ func InitPostgresql(conf *config.Config) {
 	dbUrl := conf.Database.URL
 
 	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
-	db = db.Debug()
+	//db = db.Debug()
 	if err != nil {
 		panic("❌❌ Failed to connect database: " + err.Error())
 	}
