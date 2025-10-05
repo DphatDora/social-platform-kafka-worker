@@ -23,6 +23,9 @@ func main() {
 }
 
 func setUpInfrastructure() {
+	// Set time to UTC
+	time.Local = time.UTC
+
 	conf := config.GetConfig()
 	log.Printf("[DEBUG] Config loaded: %+v", conf)
 
