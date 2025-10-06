@@ -14,7 +14,7 @@ This repository contains a Kafka worker service for processing tasks in a social
 1. Clone the repository:
 
    ```bash
-   git clone `repository_url`
+   git clone `https://github.com/DphatDora/social-platform-kafka-worker`
    cd social-platform-kafka-worker
    ```
 
@@ -26,17 +26,23 @@ This repository contains a Kafka worker service for processing tasks in a social
 
 3. Configure environment variables:
    Create a `.env` file in the root directory using `.env.example` as a template.
-
+   ```bash
+   cp .env.example .env
+   ```
 4. Configure config.yaml:
    Create a `config.yaml` file in `/config` directory using `config.example.yaml` as a template.
+   
+   ```bash
+   cp config.example.yaml config.yaml
+   ```
 
-5. Set up Kafka worker using docker-compose:
+6. Set up Kafka worker using docker-compose:
 
    ```bash
    docker-compose up -d
    ```
 
-6. Run this service:
+7. Run this service:
 
    ```bash
    go run cmd/main.go
