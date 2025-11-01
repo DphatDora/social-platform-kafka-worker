@@ -33,14 +33,11 @@ func NewEmailService(conf *config.Config) *EmailService {
 func (s *EmailService) SendEmail(payload json.RawMessage) {
 	var p EmailPayload
 	if err := json.Unmarshal(payload, &p); err != nil {
-		log.Printf("❌ Invalid email payload: %v", err)
+		log.Printf("[Error] Invalid email payload: %v", err)
 		return
 	}
 
 	auth := smtp.PlainAuth("", s.User, s.Password, s.SMTPHost)
-
-	// log email content
-	log.Printf("📧 Sending email to: %s, Subject: %s, Body: %s", p.To, p.Subject, p.Body)
 
 	msg := []byte(fmt.Sprintf("From: %s\r\n"+
 		"To: %s\r\n"+
@@ -54,8 +51,8 @@ func (s *EmailService) SendEmail(payload json.RawMessage) {
 	addr := fmt.Sprintf("%s:%s", s.SMTPHost, s.SMTPPort)
 	err := smtp.SendMail(addr, auth, s.User, []string{p.To}, msg)
 	if err != nil {
-		log.Printf("❌ Failed to send email: %v", err)
+		log.Printf("[Error] Failed to send email: %v", err)
 	} else {
-		log.Printf("✅ Email sent to %s", p.To)
+		log.Printf("Email sent to %s", p.To)
 	}
 }

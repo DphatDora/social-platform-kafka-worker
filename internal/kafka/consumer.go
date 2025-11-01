@@ -10,6 +10,7 @@ import (
 	"social-platform-kafka-worker/config"
 	"social-platform-kafka-worker/internal/model"
 	"social-platform-kafka-worker/internal/service"
+	"social-platform-kafka-worker/package/constant"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
@@ -18,9 +19,10 @@ import (
 type Consumer struct {
 	reader       *kafka.Reader
 	emailService *service.EmailService
+	karmaService *service.KarmaService
 }
 
-func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService) *Consumer {
+func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService, karmaService *service.KarmaService) *Consumer {
 	readerConfig := kafka.ReaderConfig{
 		Brokers: strings.Split(kafkaConfig.Brokers, ","),
 		Topic:   kafkaConfig.Topic,
@@ -42,6 +44,7 @@ func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService) *
 	return &Consumer{
 		reader:       kafka.NewReader(readerConfig),
 		emailService: emailService,
+		karmaService: karmaService,
 	}
 }
 
@@ -49,19 +52,20 @@ func (c *Consumer) Start(ctx context.Context) {
 	for {
 		m, err := c.reader.ReadMessage(ctx)
 		if err != nil {
-			log.Printf("❌ Kafka read error: %v", err)
+			log.Printf("[Error] Kafka read error: %v", err)
 			continue
 		}
 		var task model.BotTask
 		if err := json.Unmarshal(m.Value, &task); err != nil {
-			log.Printf("❌ Unmarshal error: %v", err)
+			log.Printf("[Error] Unmarshal error: %v", err)
 			continue
 		}
-		log.Printf("📩 Received task: %+v", task)
 
 		switch task.Action {
-		case "send_email":
+		case constant.BOT_TASK_ACTION_SEND_EMAIL:
 			c.emailService.SendEmail(task.Payload)
+		case constant.BOT_TASK_ACTION_UPDATE_KARMA:
+			c.karmaService.UpdateKarma(task.Payload)
 		default:
 			log.Printf("⚠️ Unknown action: %s", task.Action)
 		}

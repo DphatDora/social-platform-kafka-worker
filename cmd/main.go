@@ -34,14 +34,16 @@ func setUpInfrastructure() {
 
 	// Repo
 	taskRepo := repository.NewTaskRepository(database.GetDB())
+	userBadgeRepo := repository.NewUserBadgeRepository(database.GetDB())
 
 	// Service
 	taskService := service.NewTaskService(taskRepo)
 	emailService := service.NewEmailService(&conf)
+	karmaService := service.NewKarmaService(userBadgeRepo)
 
 	// Kafka
 	producer := kafka.NewProducer(conf.Kafka)
-	consumer := kafka.NewConsumer(conf.Kafka, emailService)
+	consumer := kafka.NewConsumer(conf.Kafka, emailService, karmaService)
 
 	// Handler
 	taskHandler := handler.NewTaskHandler(taskService, producer)
