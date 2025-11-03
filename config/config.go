@@ -24,7 +24,10 @@ type Config struct {
 func LoadConfig() {
 	once.Do(func() {
 		// load .env
-		_ = godotenv.Load()
+		if err := godotenv.Load(".env"); err != nil {
+			log.Println("⚠️  .env not found in current directory, trying parent directory...")
+			_ = godotenv.Load("../.env")
+		}
 
 		// load yaml config
 		viper.SetConfigName("config") // config.yaml
