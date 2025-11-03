@@ -3,9 +3,11 @@ package database
 import (
 	"fmt"
 	"social-platform-kafka-worker/config"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var pgSingleton *gorm.DB
@@ -13,11 +15,19 @@ var pgSingleton *gorm.DB
 func InitPostgresql(conf *config.Config) {
 	dbUrl := conf.Database.URL
 
-	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
+	gormLogger := logger.New(
+		nil, // default writer
+		logger.Config{
+			SlowThreshold:             2 * time.Second,
+			LogLevel:                  logger.Error, // Log only errors
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  false,
+		},
+	)
 
-	/* disable gorm logger
-	db = db.Debug()
-	*/
+	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{
+		Logger: gormLogger,
+	})
 
 	if err != nil {
 		panic("❌❌ Failed to connect database: " + err.Error())
