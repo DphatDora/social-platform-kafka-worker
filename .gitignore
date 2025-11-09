@@ -1,3 +1,6 @@
 .env
 go.sum
 .idea
+app
+worker
+worker.log
