@@ -1,0 +1,8 @@
+package constant
+
+const (
+	SCORE_UPVOTE_POST    = 2.0
+	SCORE_DOWNVOTE_POST  = -1.0
+	SCORE_FOLLOW_POST    = 3.0
+	SCORE_JOIN_COMMUNITY = 10.0
+)
