@@ -30,17 +30,6 @@ services:
     volumes:
       - kafka_data:/var/lib/kafka/data
 
-  worker:
-    image: social-platform-kafka-worker
-    container_name: worker
-    restart: always
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_BROKER: kafka:9092
-    networks:
-      - internal
-
 volumes:
   kafka_data:
 
