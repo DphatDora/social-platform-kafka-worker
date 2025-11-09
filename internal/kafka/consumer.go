@@ -17,12 +17,13 @@ import (
 )
 
 type Consumer struct {
-	reader       *kafka.Reader
-	emailService *service.EmailService
-	karmaService *service.KarmaService
+	reader               *kafka.Reader
+	emailService         *service.EmailService
+	karmaService         *service.KarmaService
+	interestScoreService *service.InterestScoreService
 }
 
-func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService, karmaService *service.KarmaService) *Consumer {
+func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService, karmaService *service.KarmaService, interestScoreService *service.InterestScoreService) *Consumer {
 	readerConfig := kafka.ReaderConfig{
 		Brokers: strings.Split(kafkaConfig.Brokers, ","),
 		Topic:   kafkaConfig.Topic,
@@ -42,9 +43,10 @@ func NewConsumer(kafkaConfig config.Kafka, emailService *service.EmailService, k
 	}
 
 	return &Consumer{
-		reader:       kafka.NewReader(readerConfig),
-		emailService: emailService,
-		karmaService: karmaService,
+		reader:               kafka.NewReader(readerConfig),
+		emailService:         emailService,
+		karmaService:         karmaService,
+		interestScoreService: interestScoreService,
 	}
 }
 
@@ -66,6 +68,8 @@ func (c *Consumer) Start(ctx context.Context) {
 			c.emailService.SendEmail(task.Payload)
 		case constant.BOT_TASK_ACTION_UPDATE_KARMA:
 			c.karmaService.UpdateKarma(task.Payload)
+		case constant.BOT_TASK_ACTION_UPDATE_INTEREST_SCORE:
+			c.interestScoreService.ProcessInterestScoreUpdate(task.Payload)
 		default:
 			log.Printf("⚠️ Unknown action: %s", task.Action)
 		}

@@ -35,27 +35,55 @@ func setUpInfrastructure() {
 	// Repo
 	taskRepo := repository.NewTaskRepository(database.GetDB())
 	userBadgeRepo := repository.NewUserBadgeRepository(database.GetDB())
+	interestScoreRepo := repository.NewInterestScoreRepository(database.GetDB())
+	tagPreferenceRepo := repository.NewTagPreferenceRepository(database.GetDB())
 
 	// Service
 	taskService := service.NewTaskService(taskRepo)
 	emailService := service.NewEmailService(&conf)
 	karmaService := service.NewKarmaService(userBadgeRepo)
+	interestScoreService := service.NewInterestScoreService(interestScoreRepo)
+	tagPreferenceService := service.NewTagPreferenceService(tagPreferenceRepo)
 
 	// Kafka
 	producer := kafka.NewProducer(conf.Kafka)
-	consumer := kafka.NewConsumer(conf.Kafka, emailService, karmaService)
+	consumer := kafka.NewConsumer(conf.Kafka, emailService, karmaService, interestScoreService)
 
 	// Handler
 	taskHandler := handler.NewTaskHandler(taskService, producer)
 
 	log.Printf("\n-----------------\n✅✅ Kafka Worker is running ✅✅\n-----------------")
 
-	// Run Producer in background
+	// Run Producer in background - Process due tasks
 	go func() {
 		ctx := context.Background()
 		for {
 			taskHandler.ProcessDueTasks(ctx)
 			time.Sleep(5 * time.Second)
+		}
+	}()
+
+	// Run Tag Preference Updater in background (daily at 2 AM UTC)
+	go func() {
+		for {
+			// Calculate time until next 2 AM UTC
+			now := time.Now().UTC()
+			next2AM := time.Date(now.Year(), now.Month(), now.Day(), 2, 0, 0, 0, time.UTC)
+			if now.After(next2AM) {
+				next2AM = next2AM.Add(24 * time.Hour)
+			}
+			timeUntil2AM := next2AM.Sub(now)
+
+			log.Printf("[TagPreference] Next update scheduled at %s (in %s)", next2AM.Format("2006-01-02 15:04:05"), timeUntil2AM)
+
+			time.Sleep(timeUntil2AM)
+
+			log.Printf("[TagPreference] Starting daily tag preference update...")
+			if err := tagPreferenceService.UpdateAllActiveUsers(); err != nil {
+				log.Printf("[Error] Tag preference update failed: %v", err)
+			} else {
+				log.Printf("[TagPreference] ✅ Daily update completed successfully")
+			}
 		}
 	}()
 
