@@ -59,6 +59,8 @@ func (s *InterestScoreService) GetScoreDeltaForAction(action string) float64 {
 		return constant.SCORE_FOLLOW_POST // +3.0
 	case constant.INTEREST_ACTION_JOIN_COMMUNITY:
 		return constant.SCORE_JOIN_COMMUNITY // +10.0
+	case constant.INTEREST_ACTION_LEAVE_COMMUNITY:
+		return constant.SCORE_LEAVE_COMMUNITY // Reset score to 0
 	default:
 		log.Printf("[Warning] Unknown action: %s, returning 0", action)
 		return 0.0
