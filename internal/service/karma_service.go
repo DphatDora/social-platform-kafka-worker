@@ -17,11 +17,13 @@ import (
 
 type KarmaService struct {
 	userBadgeRepo *repository.UserBadgeRepository
+	userRepo      *repository.UserRepository
 }
 
-func NewKarmaService(userBadgeRepo *repository.UserBadgeRepository) *KarmaService {
+func NewKarmaService(userBadgeRepo *repository.UserBadgeRepository, userRepo *repository.UserRepository) *KarmaService {
 	return &KarmaService{
 		userBadgeRepo: userBadgeRepo,
+		userRepo:      userRepo,
 	}
 }
 
@@ -36,20 +38,32 @@ func (s *KarmaService) UpdateKarma(payloadBytes []byte) {
 
 	actorKarma := s.getKarmaScoreForActor(karmaPayload.Action)
 	if actorKarma != 0 {
+		// Update monthly badge karma
 		if err := s.processUserKarma(karmaPayload.UserId, actorKarma, monthYear); err != nil {
 			log.Printf("[Error] processing karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
 		} else {
 			log.Printf("Updated karma for actor (user_id=%d): %+d", karmaPayload.UserId, actorKarma)
+		}
+
+		// Update cumulative user karma
+		if err := s.userRepo.UpdateKarma(karmaPayload.UserId, actorKarma); err != nil {
+			log.Printf("[Error] updating cumulative karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
 		}
 	}
 
 	if karmaPayload.TargetId != nil {
 		targetKarma := s.getKarmaScoreForTarget(karmaPayload.Action)
 		if targetKarma != 0 {
+			// Update monthly badge karma
 			if err := s.processUserKarma(*karmaPayload.TargetId, targetKarma, monthYear); err != nil {
 				log.Printf("[Error] processing karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
 			} else {
 				log.Printf("Updated karma for target (user_id=%d): %+d", *karmaPayload.TargetId, targetKarma)
+			}
+
+			// Update cumulative user karma
+			if err := s.userRepo.UpdateKarma(*karmaPayload.TargetId, targetKarma); err != nil {
+				log.Printf("[Error] updating cumulative karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
 			}
 		}
 	}

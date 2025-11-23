@@ -35,13 +35,14 @@ func setUpInfrastructure() {
 	// Repo
 	taskRepo := repository.NewTaskRepository(database.GetDB())
 	userBadgeRepo := repository.NewUserBadgeRepository(database.GetDB())
+	userRepo := repository.NewUserRepository(database.GetDB())
 	interestScoreRepo := repository.NewInterestScoreRepository(database.GetDB())
 	tagPreferenceRepo := repository.NewTagPreferenceRepository(database.GetDB())
 
 	// Service
 	taskService := service.NewTaskService(taskRepo)
 	emailService := service.NewEmailService(&conf)
-	karmaService := service.NewKarmaService(userBadgeRepo)
+	karmaService := service.NewKarmaService(userBadgeRepo, userRepo)
 	interestScoreService := service.NewInterestScoreService(interestScoreRepo)
 	tagPreferenceService := service.NewTagPreferenceService(tagPreferenceRepo)
 

@@ -37,7 +37,6 @@ func (h *InterestScoreHandler) ProcessInterestScoreBotTasks(ctx context.Context,
 	}
 
 	if len(tasks) == 0 {
-		// No tasks to process - this is normal, no need to log
 		return nil
 	}
 

@@ -36,8 +36,8 @@ func (s *InterestScoreService) ProcessInterestScoreUpdate(payloadData json.RawMe
 	// Calculate score delta based on action
 	scoreDelta := s.GetScoreDeltaForAction(p.Action)
 
-	log.Printf("[InterestScore] Processing: UserID=%d, CommunityID=%d, Action=%s, ScoreDelta=%.2f",
-		p.UserID, p.CommunityID, p.Action, scoreDelta)
+	// log.Printf("[InterestScore] Processing: UserID=%d, CommunityID=%d, Action=%s, ScoreDelta=%.2f",
+	// 	p.UserID, p.CommunityID, p.Action, scoreDelta)
 
 	// Update interest score
 	if err := s.interestScoreRepo.CreateOrUpdate(p.UserID, p.CommunityID, scoreDelta, p.Action); err != nil {

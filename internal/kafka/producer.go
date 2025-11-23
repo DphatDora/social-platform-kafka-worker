@@ -47,6 +47,6 @@ func (p *Producer) SendMessage(ctx context.Context, v interface{}) error {
 		log.Printf("❌ Kafka send error: %v", err)
 		return err
 	}
-	log.Println("✅ Sent message to Kafka")
+	//log.Println("✅ Sent message to Kafka")
 	return nil
 }
