@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
-	"social-platform-kafka-worker/internal/model"
 	"social-platform-kafka-worker/internal/repository"
 	"social-platform-kafka-worker/package/constant"
 	"social-platform-kafka-worker/package/payload"
@@ -104,51 +102,31 @@ func (s *KarmaService) getKarmaScoreForTarget(action string) int {
 func (s *KarmaService) processUserKarma(userID uint64, karmaChange int, monthYear string) error {
 	existingBadge, err := s.userBadgeRepo.FindByUserAndMonth(userID, monthYear)
 
+	// Calculate new karma
+	var newKarma int64
+
 	if err == gorm.ErrRecordNotFound {
-		newKarma := karmaChange
+		// User chưa có badge tháng này
+		newKarma = int64(karmaChange)
 		if newKarma < 0 {
 			newKarma = 0
 		}
-
-		badgeID := s.calculateBadgeLevel(uint64(newKarma))
-
-		newBadge := &model.UserBadge{
-			UserID:    userID,
-			BadgeID:   badgeID,
-			MonthYear: monthYear,
-			Karma:     uint64(newKarma),
-			AwardedAt: time.Now(),
-		}
-
-		if err := s.userBadgeRepo.Create(newBadge); err != nil {
-			return fmt.Errorf("failed to create user badge: %w", err)
-		}
-
-		return nil
-	}
-
-	if err != nil {
+	} else if err != nil {
 		return fmt.Errorf("failed to find user badge: %w", err)
+	} else {
+		// User đã có badge tháng này
+		newKarma = int64(existingBadge.Karma) + int64(karmaChange)
+		if newKarma < 0 {
+			newKarma = 0
+		}
 	}
 
-	// calculate new karma
-	newKarma := int64(existingBadge.Karma) + int64(karmaChange)
-	if newKarma < 0 {
-		newKarma = 0
-	}
-
-	// calculate badge levels
-	oldBadgeID := existingBadge.BadgeID
+	// Calculate new badge level
 	newBadgeID := s.calculateBadgeLevel(uint64(newKarma))
 
-	var badgeIDToUpdate uint64 = 0
-	if newBadgeID > oldBadgeID {
-		badgeIDToUpdate = newBadgeID
-	}
-
-	// update karma and badge
-	if err := s.userBadgeRepo.UpdateKarmaAndBadge(userID, monthYear, karmaChange, badgeIDToUpdate); err != nil {
-		return fmt.Errorf("failed to update user badge: %w", err)
+	// Upsert user badge
+	if err := s.userBadgeRepo.UpsertUserBadge(userID, newBadgeID, monthYear, uint64(newKarma)); err != nil {
+		return fmt.Errorf("failed to upsert user badge: %w", err)
 	}
 
 	return nil

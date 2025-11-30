@@ -46,3 +46,22 @@ func (r *UserBadgeRepository) UpdateKarmaAndBadge(userID uint64, monthYear strin
 		Updates(updates).
 		Error
 }
+
+func (r *UserBadgeRepository) UpsertUserBadge(userID uint64, badgeID uint64, monthYear string, karma uint64) error {
+	userBadge := &model.UserBadge{
+		UserID:    userID,
+		BadgeID:   badgeID,
+		MonthYear: monthYear,
+		Karma:     karma,
+		AwardedAt: time.Now(),
+	}
+
+	return r.db.Exec(`
+		INSERT INTO user_badges (user_id, badge_id, month_year, karma, awarded_at)
+		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT (user_id, badge_id, month_year)
+		DO UPDATE SET
+			karma = EXCLUDED.karma,
+			awarded_at = EXCLUDED.awarded_at
+	`, userBadge.UserID, userBadge.BadgeID, userBadge.MonthYear, userBadge.Karma, userBadge.AwardedAt).Error
+}
