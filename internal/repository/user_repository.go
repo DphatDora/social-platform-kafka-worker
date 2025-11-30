@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"social-platform-kafka-worker/internal/model"
+
 	"gorm.io/gorm"
 )
 
@@ -14,10 +16,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 
 func (r *UserRepository) UpdateKarma(userID uint64, karmaChange int) error {
 	if karmaChange > 0 {
-		return r.db.Model(&struct {
-			ID    uint64 `gorm:"column:id;primaryKey"`
-			Karma uint64 `gorm:"column:karma"`
-		}{}).
+		return r.db.Model(&model.User{}).
 			Where("id = ?", userID).
 			Update("karma", gorm.Expr("karma + ?", karmaChange)).
 			Error
