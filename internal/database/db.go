@@ -2,6 +2,8 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"social-platform-kafka-worker/config"
 	"time"
 
@@ -16,7 +18,7 @@ func InitPostgresql(conf *config.Config) {
 	dbUrl := conf.Database.URL
 
 	gormLogger := logger.New(
-		nil, // default writer
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // Fix: Sử dụng stdout thay vì nil
 		logger.Config{
 			SlowThreshold:             2 * time.Second,
 			LogLevel:                  logger.Error, // Log only errors
