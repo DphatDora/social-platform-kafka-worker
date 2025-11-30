@@ -56,11 +56,13 @@ func (r *UserBadgeRepository) UpsertUserBadge(userID uint64, badgeID uint64, mon
 		AwardedAt: time.Now(),
 	}
 
+	// INSERT ... ON CONFLICT UPDATE (chỉ dựa trên user_id và month_year)
 	return r.db.Exec(`
 		INSERT INTO user_badges (user_id, badge_id, month_year, karma, awarded_at)
 		VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT (user_id, badge_id, month_year)
+		ON CONFLICT (user_id, month_year)
 		DO UPDATE SET
+			badge_id = EXCLUDED.badge_id,
 			karma = EXCLUDED.karma,
 			awarded_at = EXCLUDED.awarded_at
 	`, userBadge.UserID, userBadge.BadgeID, userBadge.MonthYear, userBadge.Karma, userBadge.AwardedAt).Error
