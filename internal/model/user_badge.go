@@ -4,7 +4,7 @@ import "time"
 
 type UserBadge struct {
 	UserID    uint64    `gorm:"column:user_id;primaryKey"`
-	BadgeID   uint64    `gorm:"column:badge_id;primaryKey"`
+	BadgeID   uint64    `gorm:"column:badge_id"`
 	MonthYear string    `gorm:"column:month_year;primaryKey"`
 	Karma     uint64    `gorm:"column:karma"`
 	AwardedAt time.Time `gorm:"column:awarded_at"`
