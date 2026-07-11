@@ -1,10 +1,8 @@
 package database
 
 import (
-	"fmt"
-	"log"
-	"os"
 	"social-platform-kafka-worker/config"
+	appLogger "social-platform-kafka-worker/package/logger"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -18,7 +16,7 @@ func InitPostgresql(conf *config.Config) {
 	dbUrl := conf.Database.URL
 
 	gormLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // Fix: Sử dụng stdout thay vì nil
+		appLogger.NewStdErrorLogger(),
 		logger.Config{
 			SlowThreshold:             2 * time.Second,
 			LogLevel:                  logger.Error, // Log only errors
@@ -32,9 +30,9 @@ func InitPostgresql(conf *config.Config) {
 	})
 
 	if err != nil {
-		panic("❌❌ Failed to connect database: " + err.Error())
+		appLogger.Fatalf("[Database] Failed to connect database: %v", err)
 	}
-	fmt.Println("✅✅ Connect to the database successfully")
+	appLogger.Infof("[Database] Connected to the database successfully")
 	pgSingleton = db
 }
 
@@ -49,7 +47,8 @@ func GetDB() *gorm.DB {
 func ClosePostgresql() error {
 	sqlDB, err := pgSingleton.DB()
 	if err != nil {
-		fmt.Println("failed to get sql.DB:", err)
+		appLogger.Errorf("[Database] failed to get sql.DB: %v", err)
+		return err
 	}
 	defer sqlDB.Close()
 

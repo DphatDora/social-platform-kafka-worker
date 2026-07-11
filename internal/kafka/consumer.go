@@ -4,13 +4,13 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"log"
 	"strings"
 
 	"social-platform-kafka-worker/config"
 	"social-platform-kafka-worker/internal/model"
 	"social-platform-kafka-worker/internal/service"
 	"social-platform-kafka-worker/package/constant"
+	"social-platform-kafka-worker/package/logger"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
@@ -54,12 +54,12 @@ func (c *Consumer) Start(ctx context.Context) {
 	for {
 		m, err := c.reader.ReadMessage(ctx)
 		if err != nil {
-			log.Printf("[Error] Kafka read error: %v", err)
+			logger.Errorf("[Error] Kafka read error: %v", err)
 			continue
 		}
 		var task model.BotTask
 		if err := json.Unmarshal(m.Value, &task); err != nil {
-			log.Printf("[Error] Unmarshal error: %v", err)
+			logger.Errorf("[Error] Unmarshal error: %v", err)
 			continue
 		}
 
@@ -71,7 +71,7 @@ func (c *Consumer) Start(ctx context.Context) {
 		case constant.BOT_TASK_ACTION_UPDATE_INTEREST_SCORE:
 			c.interestScoreService.ProcessInterestScoreUpdate(task.Payload)
 		default:
-			log.Printf("⚠️ Unknown action: %s", task.Action)
+			logger.Warnf("[Kafka] Unknown action: %s", task.Action)
 		}
 	}
 }

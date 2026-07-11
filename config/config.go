@@ -1,7 +1,8 @@
 package config
 
 import (
-	"log"
+	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -19,13 +20,14 @@ type Config struct {
 	Database Database
 	Kafka    Kafka
 	Email    Email
+	Log      Log
 }
 
 func LoadConfig() {
 	once.Do(func() {
 		// load .env
 		if err := godotenv.Load(".env"); err != nil {
-			log.Println("⚠️  .env not found in current directory, trying parent directory...")
+			fmt.Fprintln(os.Stderr, "[WARN] .env not found in current directory, trying parent directory...")
 			_ = godotenv.Load("../.env")
 		}
 
@@ -35,7 +37,8 @@ func LoadConfig() {
 		viper.AddConfigPath("./config")
 
 		if err := viper.ReadInConfig(); err != nil {
-			log.Fatalf("Config file error: %s", err)
+			fmt.Fprintf(os.Stderr, "Config file error: %s\n", err)
+			os.Exit(1)
 		}
 
 		// env override
@@ -45,7 +48,8 @@ func LoadConfig() {
 		bindEnvs()
 
 		if err := viper.Unmarshal(&config); err != nil {
-			log.Fatalf("Config unmarshal error: %s", err)
+			fmt.Fprintf(os.Stderr, "Config unmarshal error: %s\n", err)
+			os.Exit(1)
 		}
 	})
 }
@@ -80,4 +84,10 @@ func bindEnvs() {
 	_ = viper.BindEnv("email.password", "EMAIL_PASSWORD")
 	_ = viper.BindEnv("email.smtpServer", "EMAIL_SMTP_SERVER")
 	_ = viper.BindEnv("email.smtpPort", "EMAIL_SMTP_PORT")
+
+	// Log
+	_ = viper.BindEnv("log.level", "LOG_LEVEL")
+	_ = viper.BindEnv("log.filePath", "LOG_FILE_PATH")
+	_ = viper.BindEnv("log.maxSizeMB", "LOG_MAX_SIZE_MB")
+	_ = viper.BindEnv("log.console", "LOG_CONSOLE")
 }

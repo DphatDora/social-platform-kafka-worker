@@ -2,10 +2,11 @@ package repository
 
 import (
 	"fmt"
-	"log"
+
+	"social-platform-kafka-worker/internal/model"
+	"social-platform-kafka-worker/package/logger"
 
 	"gorm.io/gorm"
-	"social-platform-kafka-worker/internal/model"
 )
 
 type TagPreferenceRepository struct {
@@ -34,7 +35,7 @@ func (r *TagPreferenceRepository) UpsertTagPreferences(userID uint64, tags []str
 		if err := r.db.Create(newPreference).Error; err != nil {
 			return fmt.Errorf("failed to create tag preferences: %w", err)
 		}
-		log.Printf("[TagPreference] Created for UserID=%d: %d tags", userID, len(tags))
+		logger.Infof("[TagPreference] Created for UserID=%d: %d tags", userID, len(tags))
 		return nil
 	} else if err != nil {
 		return fmt.Errorf("failed to query tag preferences: %w", err)
@@ -49,7 +50,7 @@ func (r *TagPreferenceRepository) UpsertTagPreferences(userID uint64, tags []str
 		return fmt.Errorf("failed to update tag preferences: %w", err)
 	}
 
-	log.Printf("[TagPreference] Updated for UserID=%d: %d tags", userID, len(tags))
+	logger.Infof("[TagPreference] Updated for UserID=%d: %d tags", userID, len(tags))
 	return nil
 }
 

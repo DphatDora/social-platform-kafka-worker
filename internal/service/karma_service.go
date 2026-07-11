@@ -3,10 +3,10 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"social-platform-kafka-worker/internal/repository"
 	"social-platform-kafka-worker/package/constant"
+	"social-platform-kafka-worker/package/logger"
 	"social-platform-kafka-worker/package/payload"
 	"social-platform-kafka-worker/package/util"
 
@@ -28,7 +28,7 @@ func NewKarmaService(userBadgeRepo *repository.UserBadgeRepository, userRepo *re
 func (s *KarmaService) UpdateKarma(payloadBytes []byte) {
 	var karmaPayload payload.UpdateUserKarmaPayload
 	if err := json.Unmarshal(payloadBytes, &karmaPayload); err != nil {
-		log.Printf("[Error] unmarshaling karma payload: %v", err)
+		logger.Errorf("[Error] unmarshaling karma payload: %v", err)
 		return
 	}
 
@@ -38,14 +38,14 @@ func (s *KarmaService) UpdateKarma(payloadBytes []byte) {
 	if actorKarma != 0 {
 		// Update monthly badge karma
 		if err := s.processUserKarma(karmaPayload.UserId, actorKarma, monthYear); err != nil {
-			log.Printf("[Error] processing karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
+			logger.Errorf("[Error] processing karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
 		} else {
-			log.Printf("Updated karma for actor (user_id=%d): %+d", karmaPayload.UserId, actorKarma)
+			logger.Infof("[Karma] Updated karma for actor (user_id=%d): %+d", karmaPayload.UserId, actorKarma)
 		}
 
 		// Update cumulative user karma
 		if err := s.userRepo.UpdateKarma(karmaPayload.UserId, actorKarma); err != nil {
-			log.Printf("[Error] updating cumulative karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
+			logger.Errorf("[Error] updating cumulative karma for actor (user_id=%d): %v", karmaPayload.UserId, err)
 		}
 	}
 
@@ -54,14 +54,14 @@ func (s *KarmaService) UpdateKarma(payloadBytes []byte) {
 		if targetKarma != 0 {
 			// Update monthly badge karma
 			if err := s.processUserKarma(*karmaPayload.TargetId, targetKarma, monthYear); err != nil {
-				log.Printf("[Error] processing karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
+				logger.Errorf("[Error] processing karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
 			} else {
-				log.Printf("Updated karma for target (user_id=%d): %+d", *karmaPayload.TargetId, targetKarma)
+				logger.Infof("[Karma] Updated karma for target (user_id=%d): %+d", *karmaPayload.TargetId, targetKarma)
 			}
 
 			// Update cumulative user karma
 			if err := s.userRepo.UpdateKarma(*karmaPayload.TargetId, targetKarma); err != nil {
-				log.Printf("[Error] updating cumulative karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
+				logger.Errorf("[Error] updating cumulative karma for target (user_id=%d): %v", *karmaPayload.TargetId, err)
 			}
 		}
 	}

@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"os"
 	"time"
 
 	"social-platform-kafka-worker/config"
@@ -11,6 +12,7 @@ import (
 	"social-platform-kafka-worker/internal/kafka"
 	"social-platform-kafka-worker/internal/repository"
 	"social-platform-kafka-worker/internal/service"
+	"social-platform-kafka-worker/package/logger"
 )
 
 const (
@@ -27,7 +29,13 @@ func setUpInfrastructure() {
 	time.Local = time.UTC
 
 	conf := config.GetConfig()
-	log.Printf("[DEBUG] Config loaded: %+v", conf)
+	if err := logger.Init(&conf.Log); err != nil {
+		fmt.Fprintf(os.Stderr, "logger init: %v\n", err)
+		os.Exit(1)
+	}
+	defer func() { _ = logger.Sync() }()
+
+	logger.Debugf("[DEBUG] Config loaded: %+v", conf)
 
 	// Init DB
 	database.InitPostgresql(&conf)
@@ -53,7 +61,7 @@ func setUpInfrastructure() {
 	// Handler
 	taskHandler := handler.NewTaskHandler(taskService, producer)
 
-	log.Printf("\n-----------------\n✅✅ Kafka Worker is running ✅✅\n-----------------")
+	logger.Infof("[Worker] Kafka worker is running")
 
 	// Run Producer in background - Process due tasks
 	go func() {
@@ -75,15 +83,15 @@ func setUpInfrastructure() {
 			}
 			timeUntil2AM := next2AM.Sub(now)
 
-			log.Printf("[TagPreference] Next update scheduled at %s (in %s)", next2AM.Format("2006-01-02 15:04:05"), timeUntil2AM)
+			logger.Infof("[TagPreference] Next update scheduled at %s (in %s)", next2AM.Format("2006-01-02 15:04:05"), timeUntil2AM)
 
 			time.Sleep(timeUntil2AM)
 
-			log.Printf("[TagPreference] Starting daily tag preference update...")
+			logger.Infof("[TagPreference] Starting daily tag preference update...")
 			if err := tagPreferenceService.UpdateAllActiveUsers(); err != nil {
-				log.Printf("[Error] Tag preference update failed: %v", err)
+				logger.Errorf("[Error] Tag preference update failed: %v", err)
 			} else {
-				log.Printf("[TagPreference] ✅ Daily update completed successfully")
+				logger.Infof("[TagPreference] Daily update completed successfully")
 			}
 		}
 	}()
@@ -100,6 +108,6 @@ func setUpInfrastructure() {
 
 func closeInfrastructure() {
 	if err := database.ClosePostgresql(); err != nil {
-		log.Printf("[ERROR] Close postgresql fail: %s\n", err)
+		logger.Errorf("[ERROR] Close postgresql fail: %s", err)
 	}
 }

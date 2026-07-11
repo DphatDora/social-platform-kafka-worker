@@ -2,12 +2,13 @@ package repository
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"gorm.io/gorm"
 	"social-platform-kafka-worker/internal/model"
 	"social-platform-kafka-worker/package/constant"
+	"social-platform-kafka-worker/package/logger"
+
+	"gorm.io/gorm"
 )
 
 type InterestScoreRepository struct {
@@ -51,7 +52,7 @@ func (r *InterestScoreRepository) CreateOrUpdate(userID, communityID uint64, sco
 			return fmt.Errorf("failed to create interest score: %w", err)
 		}
 
-		log.Printf("[InterestScore] Created: UserID=%d, CommunityID=%d, Score=%.2f",
+		logger.Infof("[InterestScore] Created: UserID=%d, CommunityID=%d, Score=%.2f",
 			userID, communityID, scoreDelta)
 		return nil
 	} else if err != nil {
@@ -79,7 +80,7 @@ func (r *InterestScoreRepository) CreateOrUpdate(userID, communityID uint64, sco
 	}
 
 	newScore := existingScore.Score + scoreDelta
-	log.Printf("[InterestScore] Updated: UserID=%d, CommunityID=%d, OldScore=%.2f, NewScore=%.2f",
+	logger.Infof("[InterestScore] Updated: UserID=%d, CommunityID=%d, OldScore=%.2f, NewScore=%.2f",
 		userID, communityID, existingScore.Score, newScore)
 
 	return nil
@@ -119,7 +120,7 @@ func (r *InterestScoreRepository) handleLeaveCommunity(userID, communityID uint6
 			return fmt.Errorf("failed to create interest score record for leave_community: %w", err)
 		}
 
-		log.Printf("[InterestScore] Leave Community: Created new record with Score=0 for UserID=%d, CommunityID=%d",
+		logger.Infof("[InterestScore] Leave Community: Created new record with Score=0 for UserID=%d, CommunityID=%d",
 			userID, communityID)
 		return nil
 	} else if err != nil {
@@ -138,7 +139,7 @@ func (r *InterestScoreRepository) handleLeaveCommunity(userID, communityID uint6
 		return fmt.Errorf("failed to reset interest score for leave_community: %w", err)
 	}
 
-	log.Printf("[InterestScore] Leave Community: Reset score to 0 for UserID=%d, CommunityID=%d (OldScore=%.2f)",
+	logger.Infof("[InterestScore] Leave Community: Reset score to 0 for UserID=%d, CommunityID=%d (OldScore=%.2f)",
 		userID, communityID, existingScore.Score)
 
 	return nil

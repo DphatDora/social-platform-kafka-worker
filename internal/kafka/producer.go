@@ -4,9 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"log"
 
 	"social-platform-kafka-worker/config"
+	"social-platform-kafka-worker/package/logger"
 
 	"github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl/plain"
@@ -44,7 +44,7 @@ func (p *Producer) SendMessage(ctx context.Context, v interface{}) error {
 	value, _ := json.Marshal(v)
 	err := p.writer.WriteMessages(ctx, kafka.Message{Value: value})
 	if err != nil {
-		log.Printf("❌ Kafka send error: %v", err)
+		logger.Errorf("[Kafka] send error: %v", err)
 		return err
 	}
 	//log.Println("✅ Sent message to Kafka")

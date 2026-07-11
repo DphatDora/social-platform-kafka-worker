@@ -33,3 +33,6 @@ email:
 
 log:
   level: "debug"
+  filePath: "logs/app.log"
+  maxSizeMB: 10
+  console: true

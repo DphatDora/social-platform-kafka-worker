@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/smtp"
 	"social-platform-kafka-worker/config"
+	"social-platform-kafka-worker/package/logger"
 )
 
 type EmailPayload struct {
@@ -33,7 +33,7 @@ func NewEmailService(conf *config.Config) *EmailService {
 func (s *EmailService) SendEmail(payload json.RawMessage) {
 	var p EmailPayload
 	if err := json.Unmarshal(payload, &p); err != nil {
-		log.Printf("[Error] Invalid email payload: %v", err)
+		logger.Errorf("[Error] Invalid email payload: %v", err)
 		return
 	}
 
@@ -51,8 +51,8 @@ func (s *EmailService) SendEmail(payload json.RawMessage) {
 	addr := fmt.Sprintf("%s:%s", s.SMTPHost, s.SMTPPort)
 	err := smtp.SendMail(addr, auth, s.User, []string{p.To}, msg)
 	if err != nil {
-		log.Printf("[Error] Failed to send email: %v", err)
+		logger.Errorf("[Error] Failed to send email: %v", err)
 	} else {
-		log.Printf("Email sent to %s", p.To)
+		logger.Infof("[Email] Email sent to %s", p.To)
 	}
 }
